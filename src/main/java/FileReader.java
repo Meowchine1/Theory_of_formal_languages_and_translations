@@ -1,8 +1,10 @@
 import conditions.Condition;
 import conditions.DeterministicCondition;
 import conditions.ZeroCondition;
+import machine.KNDA;
 import machine.Machine;
 import machine.NDA_e_transitions;
+import machine.NotFound;
 import values.Value;
 import java.util.Map.Entry;
 import java.io.File;
@@ -10,9 +12,10 @@ import java.io.FileNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.regex.Pattern;
 
 public class FileReader {
-    private MachineSelection machine
+    private MachineSelection machine;
     private Value[] values;
     private Condition[] conditions;
     private HashMap<Condition, HashMap<Value, String>> intermediate_transition = new HashMap<>();
@@ -25,18 +28,25 @@ public class FileReader {
             String[] numbers = scanner.nextLine().replaceAll(" ", "").split(";");
             int valuesN = Integer.parseInt(numbers[0]);
             int condN = Integer.parseInt(numbers[1]);
+            String ndaRegex = "[{](\\w;){2,}[}]";
+            Pattern pattern = Pattern.compile(ndaRegex);
             while(scanner.hasNextLine()){
                  String line = scanner.nextLine();
                  if(line.contains("e")){
                     return new NDA_e_transitions(filePath);
                  }
 
+                 if( pattern.matcher(line).matches()){
+                     return new KNDA(filePath);
+                 }
             }
+            return new KNDA(filePath);
 
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+        return new NotFound(filePath);
     }
 
     public FileReader() {
@@ -90,7 +100,7 @@ public class FileReader {
                         else{
                             boolean isEnded_condition = condition.contains("*");
                             boolean isStarted_condition = condition.contains("^");
-                            unit_transition.put(value,new DeterministicCondition())
+                            // unit_transition.put(value,new DeterministicCondition())
                         }
                         // ...
                     }
