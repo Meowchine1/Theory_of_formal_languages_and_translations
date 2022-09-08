@@ -1,0 +1,7 @@
+^ -- начальное
+
+* -- конечное состояние
+
+0 -- empty condition
+
+e -- e-transition
