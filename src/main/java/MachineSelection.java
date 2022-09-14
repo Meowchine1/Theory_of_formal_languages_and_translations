@@ -1,11 +1,11 @@
 import conditions.Condition;
-import conditions.DeterministicCondition;
+import conditions.UsualCondition;
 import values.Value;
 
 import java.util.HashMap;
 
 public class MachineSelection {
-    private DeterministicCondition actualCondition;
+    private UsualCondition actualCondition;
     private HashMap<Condition, HashMap<Value, Condition>> values;
 
     public MachineSelection(HashMap<Condition, HashMap<Value, Condition>> values) {

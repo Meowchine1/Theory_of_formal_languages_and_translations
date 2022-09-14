@@ -1,5 +1,5 @@
 import conditions.Condition;
-import conditions.DeterministicCondition;
+import conditions.UsualCondition;
 import conditions.ZeroCondition;
 import machine.KNDA;
 import machine.Machine;
@@ -19,7 +19,7 @@ public class FileReader {
     private Value[] values;
     private Condition[] conditions;
     private HashMap<Condition, HashMap<Value, String>> intermediate_transition = new HashMap<>();
-    private String filePath = "example";
+    private String filePath = "e_transition.txt";
 
 
     public Machine defineMachine(){
@@ -28,19 +28,23 @@ public class FileReader {
             String[] numbers = scanner.nextLine().replaceAll(" ", "").split(";");
             int valuesN = Integer.parseInt(numbers[0]);
             int condN = Integer.parseInt(numbers[1]);
-            String ndaRegex = "[{](\\w;){2,}[}]";
-            Pattern pattern = Pattern.compile(ndaRegex);
-            while(scanner.hasNextLine()){
-                 String line = scanner.nextLine();
-                 if(line.contains("e")){
-                    return new NDA_e_transitions(filePath);
-                 }
 
-                 if( pattern.matcher(line).matches()){
-                     return new KNDA(filePath);
-                 }
+            String values = scanner.nextLine();
+
+            if (values.contains("e")){
+                return new NDA_e_transitions(filePath);
             }
-            return new KNDA(filePath);
+            else{
+                String ndaRegex = "[{](\\w;){2,}[}]";
+                Pattern pattern = Pattern.compile(ndaRegex);
+                while(scanner.hasNextLine()){
+                    String line = scanner.nextLine();
+                    if(pattern.matcher(line).matches()){
+                        return new KNDA(filePath);
+                    }
+                }
+                return new KNDA(filePath);
+            }
 
         }
         catch (FileNotFoundException e) {
@@ -51,14 +55,14 @@ public class FileReader {
 
     public FileReader() {
         try {
-            Scanner scanner = new Scanner(new File("example"));
+            Scanner scanner = new Scanner(new File(filePath));
             while (scanner.hasNextLine()) {
                 String[] numbers = scanner.nextLine().replaceAll(" ", "").split(";");
                 int valuesN = Integer.parseInt(numbers[0]);
                 int condN = Integer.parseInt(numbers[1]);
 
                 values = new Value[valuesN];
-                conditions = new DeterministicCondition[condN];
+                conditions = new UsualCondition[condN];
 
                 String[] values_line = scanner.nextLine().replaceAll(" ", "").split(";");
                 for(int i = 0; i< valuesN; i++){
@@ -73,7 +77,7 @@ public class FileReader {
                     String conditionInitialization = line[0];// if cond name contains ^ *
                     boolean isEnded_condition = conditionInitialization.contains("*");
                     boolean isStarted_condition = conditionInitialization.contains("^");
-                    DeterministicCondition condition = new DeterministicCondition(line[0], isEnded_condition, isStarted_condition);
+                    UsualCondition condition = new UsualCondition(line[0], isEnded_condition, isStarted_condition);
                     conditions[i] = condition;
 
                      transition = new HashMap<>(); // тк во время считывания строк автомата не все состояния определены определяю промкжуточный словарь
