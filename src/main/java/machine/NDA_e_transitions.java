@@ -13,14 +13,14 @@ public class NDA_e_transitions extends Machine {
 
     private HashMap<Condition, HashMap<Value, ArrayList<Condition>>> transitions;
 
-    public NDA_e_transitions(String filePath) {
-        super(filePath);
+    public NDA_e_transitions(String fileInPath, String fileOutPath) {
+        super(fileInPath, fileOutPath);
     }
 
     @Override
     public void readTxt() {
         try {
-            Scanner scanner = new Scanner(new File(filePath));
+            Scanner scanner = new Scanner(new File(fileInPath));
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();

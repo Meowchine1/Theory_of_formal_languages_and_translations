@@ -1,123 +1,54 @@
-import conditions.Condition;
-import conditions.UsualCondition;
-import conditions.ZeroCondition;
-import machine.KNDA;
-import machine.Machine;
-import machine.NDA_e_transitions;
-import machine.NotFound;
-import values.Value;
-import java.util.Map.Entry;
+import machine.*;
+
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Scanner;
 import java.util.regex.Pattern;
 
 public class FileReader {
-    private MachineSelection machine;
-    private Value[] values;
-    private Condition[] conditions;
-    private HashMap<Condition, HashMap<Value, String>> intermediate_transition = new HashMap<>();
-    private String filePath = "e_transition.txt";
-
-
+    private String fileIn;
+    private String fileOut;
+    public FileReader(String fileIn, String fileOut){
+        this.fileIn = fileIn;
+        this.fileOut = fileOut;
+    }
     public Machine defineMachine(){
+        int startedConditionsNum = 0;
         try{
-            Scanner scanner = new Scanner(new File(filePath));
+            Scanner scanner = new Scanner(new File(fileIn));
             String[] numbers = scanner.nextLine().replaceAll(" ", "").split(";");
-            int valuesN = Integer.parseInt(numbers[0]);
-            int condN = Integer.parseInt(numbers[1]);
 
             String values = scanner.nextLine();
 
             if (values.contains("e")){
-                return new NDA_e_transitions(filePath);
+                return new NDA_e_transitions(fileIn, fileOut);
             }
             else{
                 String ndaRegex = "[{](\\w;){2,}[}]";
                 Pattern pattern = Pattern.compile(ndaRegex);
                 while(scanner.hasNextLine()){
                     String line = scanner.nextLine();
+
+                    String[] conditions = line.replaceAll(" ", "").split(";");
+                    if(conditions[0].contains("^")){
+                        startedConditionsNum++;
+                    }
                     if(pattern.matcher(line).matches()){
-                        return new KNDA(filePath);
+                        return new KNDA(fileIn, fileOut);
                     }
                 }
-                return new KNDA(filePath);
+                if(startedConditionsNum == 1){
+                    return new KDA(fileIn, fileOut);
+                }
+
             }
 
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
         }
-        return new NotFound(filePath);
+        return new NotFound(fileIn, fileOut);
     }
-
-    public FileReader() {
-        try {
-            Scanner scanner = new Scanner(new File(filePath));
-            while (scanner.hasNextLine()) {
-                String[] numbers = scanner.nextLine().replaceAll(" ", "").split(";");
-                int valuesN = Integer.parseInt(numbers[0]);
-                int condN = Integer.parseInt(numbers[1]);
-
-                values = new Value[valuesN];
-                conditions = new UsualCondition[condN];
-
-                String[] values_line = scanner.nextLine().replaceAll(" ", "").split(";");
-                for(int i = 0; i< valuesN; i++){
-                    Value value = new Value(values_line[i]);
-                    values[i] = value;
-                }
-                HashMap<Value, String> transition;
-                for(int i = 0; i< condN; i++){ // обработка * ^
-                    String unit = scanner.nextLine();
-
-                    String[] line = unit.replaceAll(" ", "").split(";");
-                    String conditionInitialization = line[0];// if cond name contains ^ *
-                    boolean isEnded_condition = conditionInitialization.contains("*");
-                    boolean isStarted_condition = conditionInitialization.contains("^");
-                    UsualCondition condition = new UsualCondition(line[0], isEnded_condition, isStarted_condition);
-                    conditions[i] = condition;
-
-                     transition = new HashMap<>(); // тк во время считывания строк автомата не все состояния определены определяю промкжуточный словарь
-
-                    for(int j = 0; j < valuesN; j++){
-                        Value value = values[j];     // ключ
-                        int j_for_line = j + 1;
-                       transition.put(value, line[j_for_line]);
-                    }
-                    intermediate_transition.put(condition, transition);
-                }
-
-                HashMap<Condition, HashMap<Value, Condition>> final_transition = new HashMap<>();
-                for(Entry<Condition, HashMap<Value, String>> entry : intermediate_transition.entrySet()) {
-                    Condition main_condition = entry.getKey();
-                    HashMap<Value, Condition> unit_transition = new HashMap<>();
-                    for (Map.Entry<Value, String> nameEntry : entry.getValue().entrySet()) {
-                        Value value = nameEntry.getKey();
-                        String condition = nameEntry.getValue();
-
-                        if(condition.equals("0")){
-                            unit_transition.put(value, new ZeroCondition());
-                        }
-                        else{
-                            boolean isEnded_condition = condition.contains("*");
-                            boolean isStarted_condition = condition.contains("^");
-                            // unit_transition.put(value,new DeterministicCondition())
-                        }
-                        // ...
-                    }
-
-
-
-                    final_transition.put(main_condition, unit_transition);
-
-
-
-                }
-            }
-
             // n k
             //     x1 x2 x3    values
             // y1  y3  y1  .
@@ -125,8 +56,4 @@ public class FileReader {
             // y3
             //  * -- ending
 
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
 }

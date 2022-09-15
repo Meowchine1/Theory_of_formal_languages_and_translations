@@ -16,4 +16,14 @@ public class ZeroCondition implements Condition {
     public String getName() {
         return name;
     }
+
+    @Override
+    public boolean isEnded() {
+        return false;
+    }
+
+    @Override
+    public boolean isStarted() {
+        return false;
+    }
 }

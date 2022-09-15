@@ -9,6 +9,14 @@ public class UsualCondition implements Condition {
         return name;
     }
 
+    public boolean isEnded() {
+        return isEnded;
+    }
+
+    public boolean isStarted() {
+        return isStarted;
+    }
+
     public UsualCondition(String name, boolean isEnded, boolean isStarted ) {
         this.name = name;
         this.isEnded = isEnded;

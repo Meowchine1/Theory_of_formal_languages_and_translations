@@ -13,14 +13,14 @@ public class KNDA extends Machine {
 
     private HashMap<Condition, HashMap<Value, ArrayList<Condition>>> transitions;
 
-    public KNDA(String filePath) {
-        super(filePath);
+    public KNDA(String fileInPath, String fileOutPath) {
+        super(fileInPath, fileOutPath);
     }
 
     @Override
     public void readTxt() {
         try {
-            Scanner scanner = new Scanner(new File(filePath));
+            Scanner scanner = new Scanner(new File(fileInPath));
         }
         catch (FileNotFoundException e) {
             e.printStackTrace();
