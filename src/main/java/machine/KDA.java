@@ -55,7 +55,7 @@ public class KDA extends Machine {
 
     @Override
     protected void changeActualCondition(String word){
-
+// если состояние 0  не по значению а по ссылке на нулевое состоние.
         Value value  = getValueByName(word);
 
         for (Map.Entry<Condition, HashMap<Value, Condition>> entry : transitions.entrySet()) {
@@ -64,8 +64,15 @@ public class KDA extends Machine {
                 HashMap<Value, Condition> unit_transition = new HashMap<>();
                 for (Map.Entry<Value, Condition> innerEntry : entry.getValue().entrySet()) {
                     if(innerEntry.getKey().equals(value)){
-                        setActualCondition(innerEntry.getValue());
-                        break;
+                        if(innerEntry.getValue().getClass().equals(ZeroCondition.class))
+                        {
+
+                        }
+                        else{
+                            setActualCondition(innerEntry.getValue());
+                            break;
+                        }
+
                     }
                 }
                 break;
@@ -80,9 +87,10 @@ public class KDA extends Machine {
         try {
             FileWriter writer = new FileWriter(fileOutPath, true);
             for(String word: words){
+
+                changeActualCondition(word);
                 System.out.print(getActualConditionString());
                 writer.write(getActualConditionString());
-                changeActualCondition(word);
             }
             if(actualCondition.isEnded()){
                 writer.write(getActualConditionString() + "\nGood job\n ");
@@ -105,23 +113,29 @@ public class KDA extends Machine {
 
         try(FileWriter writer = new FileWriter(fileOutPath, false)) {
             writer.write("      ");
+            System.out.print("      ");
             values.forEach(c -> {
                 try {
                     writer.write(c.getValue() + "     ");
+                    System.out.print(c.getValue() + "     ");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
             });
+
+            System.out.print("\n");
             writer.write("\n");
 
             for (Map.Entry<Condition, HashMap<Value, Condition>> entry : transitions.entrySet()) {
                 Condition main_condition = entry.getKey();
                 HashMap<Value, Condition> unit_transition = new HashMap<>();
+                System.out.print(main_condition.getName() + "   :");
                 writer.write(main_condition.getName() + "   :");
                 for (Map.Entry<Value, Condition> innerEntry : entry.getValue().entrySet()) {
                     writer.write(innerEntry.getValue().getName() + ";    ");
                 }
                 writer.write("\n");
+                System.out.print("\n");
             }
 
         }
@@ -201,7 +215,7 @@ public class KDA extends Machine {
                         for (Map.Entry<Value, String> innerEntry : entry.getValue().entrySet()) {
                             Value value = innerEntry.getKey();
                             String condition = innerEntry.getValue();
-
+// zero condition singltone
                             if (condition.equals("0")) {
                                 unit_transition.put(value, new ZeroCondition("0"));
                             } else {

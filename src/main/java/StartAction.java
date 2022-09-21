@@ -10,12 +10,12 @@ import java.util.HashMap;
 public class StartAction {
 
     public static void main(String[] args) {
-        FileReader reader = new FileReader("C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/machine/kda.txt",
-                "C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/fileOut");
+        FileReader reader = new FileReader("C:/Users/katev/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/machine/kda.txt",
+                "C:/Users/katev/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/fileOut");
         Machine machine = reader.defineMachine();
         machine.readTxt();
         machine.print();
-        machine.work("C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/word/slovo.txt");
+        machine.work("C:/Users/katev/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/word/slovo.txt");
 
 
     }
