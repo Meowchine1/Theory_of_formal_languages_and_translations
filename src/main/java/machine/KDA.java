@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.Scanner;
 
 public class KDA extends Machine {
-    
+    protected static Condition actualCondition;
     private HashMap<Condition, HashMap<Value, Condition>> transitions;
 
     public KDA(String fileInPath, String fileOutPath) {
@@ -23,7 +23,13 @@ public class KDA extends Machine {
     }
 
     //   начального состояния больше одного
+    protected void setActualCondition(Condition actualCondition) {
+        actualCondition = actualCondition;
+    }
 
+    protected String getActualConditionString(){
+        return "\nActual condition is ==> " + actualCondition.getName();
+    }
     @Override
     public void work(String wordFile){
         readWord(wordFile);
@@ -42,7 +48,7 @@ public class KDA extends Machine {
                        words.add(word);
                    }
                    else{
-                       setActualCondition(new ZeroCondition());
+                       setActualCondition(ZeroCondition.getInstance());
                    }
 
                }
@@ -84,28 +90,43 @@ public class KDA extends Machine {
 
     @Override
     protected void executeWord(){
-        try {
-            FileWriter writer = new FileWriter(fileOutPath, true);
-            for(String word: words){
-
-                changeActualCondition(word);
-                System.out.print(getActualConditionString());
-                writer.write(getActualConditionString());
-            }
-            if(actualCondition.isEnded()){
-                writer.write(getActualConditionString() + "\nGood job\n ");
-                System.out.print(getActualConditionString() + "\nGood job\n ");
+            if(actualCondition.equals(ZeroCondition.getInstance())){
+                try {
+                    FileWriter writer = new FileWriter(fileOutPath, true);
+                    writer.write(getActualConditionString() + "\nFailed initialization\n ");
+                    System.out.print(getActualConditionString() + "\nFailed initialization\n ");
+                }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
             else{
-                writer.write("\nFailed: last condition is not ended\n ");
-                System.out.print("\nFailed: last condition is not ended\n ");
-                    setActualCondition(new ZeroCondition());
+
+                try {
+                    FileWriter writer = new FileWriter(fileOutPath, true);
+                    for(String word: words){
+
+                        changeActualCondition(word);
+                        System.out.print(getActualConditionString());
+                        writer.write(getActualConditionString());
+                    }
+                    if(actualCondition.isEnded()){
+                        writer.write(getActualConditionString() + "\nGood job\n ");
+                        System.out.print(getActualConditionString() + "\nGood job\n ");
+                    }
+                    else{
+                        writer.write("\nFailed: last condition is not ended\n ");
+                        System.out.print("\nFailed: last condition is not ended\n ");
+                        setActualCondition(ZeroCondition.getInstance());
+                    }
+
+                }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
 
-        }
-         catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
     @Override
@@ -165,7 +186,7 @@ public class KDA extends Machine {
                         values.add(value);
                     }
                     else {
-                        setActualCondition(new ZeroCondition());
+                        setActualCondition(ZeroCondition.getInstance());
                         break;
                     }
 
@@ -187,7 +208,7 @@ public class KDA extends Machine {
                         conditions.add(condition);
                     }
                     else{
-                        setActualCondition(new ZeroCondition());
+                        setActualCondition(ZeroCondition.getInstance());
                         break;
                     }
 
@@ -215,9 +236,8 @@ public class KDA extends Machine {
                         for (Map.Entry<Value, String> innerEntry : entry.getValue().entrySet()) {
                             Value value = innerEntry.getKey();
                             String condition = innerEntry.getValue();
-// zero condition singltone
                             if (condition.equals("0")) {
-                                unit_transition.put(value, new ZeroCondition("0"));
+                                unit_transition.put(value, ZeroCondition.getInstance());
                             } else {
                                 Condition unitCondition = getConditionByName(condition);
                                 unit_transition.put(value,unitCondition);
@@ -228,7 +248,7 @@ public class KDA extends Machine {
                     }
                 }
                 else{
-                    setActualCondition(new ZeroCondition());
+                    setActualCondition(ZeroCondition.getInstance());
                     break;
                 }
 

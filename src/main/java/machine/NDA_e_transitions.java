@@ -18,6 +18,57 @@ public class NDA_e_transitions extends Machine {
     }
 
     @Override
+    public Value getValueByName(String name) {
+        return super.getValueByName(name);
+    }
+
+    @Override
+    public Condition getConditionByName(String name) {
+        return super.getConditionByName(name);
+    }
+
+
+    @Override
+    protected boolean valueDoesNotExists(String valueName) {
+        return super.valueDoesNotExists(valueName);
+    }
+
+    @Override
+    protected boolean conditionDoesNotExists(String conditionName) {
+        return super.conditionDoesNotExists(conditionName);
+    }
+
+    @Override
+    protected boolean endedAndStartedConditionsExist() {
+        return super.endedAndStartedConditionsExist();
+    }
+
+    @Override
+    public void print() {
+        super.print();
+    }
+
+    @Override
+    protected void readWord(String wordFile) {
+        super.readWord(wordFile);
+    }
+
+    @Override
+    protected void executeWord() {
+        super.executeWord();
+    }
+
+    @Override
+    protected void changeActualCondition(String word) {
+        super.changeActualCondition(word);
+    }
+
+    @Override
+    public void work(String wordFile) {
+        super.work(wordFile);
+    }
+
+    @Override
     public void readTxt() {
         try {
             Scanner scanner = new Scanner(new File(fileInPath));

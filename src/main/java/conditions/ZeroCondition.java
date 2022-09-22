@@ -5,16 +5,18 @@ import values.Value;
 
 public class ZeroCondition implements Condition {
 
-    private String name;
-    public ZeroCondition(){}
-    public ZeroCondition(String name) {
+    private static ZeroCondition instance;
 
-        this.name = name;
+    public static synchronized ZeroCondition getInstance() {
+        if (instance == null) {
+            instance = new ZeroCondition();
+        }
+        return instance;
     }
 
     @Override
     public String getName() {
-        return name;
+        return "null";
     }
 
     @Override

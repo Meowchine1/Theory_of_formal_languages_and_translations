@@ -13,7 +13,7 @@ public abstract  class Machine {
     protected ArrayList<String > words;
     protected  String fileInPath;
     protected  String fileOutPath;
-    protected static Condition actualCondition;
+
 
     public Value getValueByName(String name){
         return values.stream().filter(v -> v.getValue().equals(name)).findFirst().get();
@@ -26,13 +26,6 @@ public abstract  class Machine {
         this.fileOutPath = fileOutPath;
     }
 
-    protected void setActualCondition(Condition actualCondition) {
-        Machine.actualCondition = actualCondition;
-    }
-
-    protected String getActualConditionString(){
-        return "\nActual condition is ==> " + actualCondition.getName();
-    }
 
     protected  boolean valueDoesNotExists(String valueName){
         if(!values.isEmpty())

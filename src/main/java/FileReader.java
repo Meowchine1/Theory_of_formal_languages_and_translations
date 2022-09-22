@@ -24,8 +24,8 @@ public class FileReader {
                 return new NDA_e_transitions(fileIn, fileOut);
             }
             else{
-                String ndaRegex = "[{](\\w;){2,}[}]";
-                Pattern pattern = Pattern.compile(ndaRegex);
+               // String ndaRegex = "(\\w+, *){2,}";
+              //  Pattern pattern = Pattern.compile(ndaRegex);
                 while(scanner.hasNextLine()){
                     String line = scanner.nextLine();
 
@@ -33,7 +33,7 @@ public class FileReader {
                     if(conditions[0].contains("^")){
                         startedConditionsNum++;
                     }
-                    if(pattern.matcher(line).matches()){
+                    if(line.contains(",")){
                         return new KNDA(fileIn, fileOut);
                     }
                 }
