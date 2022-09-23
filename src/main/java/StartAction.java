@@ -29,6 +29,7 @@ public class StartAction {
         machine.readTxt();
 
         machine.print();
+        machine.work("C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/word/slovo.txt");
 
     }
 

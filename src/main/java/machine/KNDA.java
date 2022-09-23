@@ -10,46 +10,17 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+
 // несколько начальных состояний распараллеливание сразу
 public class KNDA extends Machine {
 
     private boolean canExecute = true;
-
-    private ArrayList<Condition> actualConditions = new ArrayList<>();
-    private HashMap<Condition, HashMap<Value, Condition>> transitions; //вынести в базовый класс
-
+    private HashMap<Condition, HashMap<Value, ArrayList<Condition>>> transitions; //вынести в базовый класс
+    ArrayList<Condition> actualConditions = new ArrayList<>();
 
     public KNDA(String fileInPath, String fileOutPath) {
         super(fileInPath, fileOutPath);
-    }
-
-    @Override
-    public Value getValueByName(String name) {
-        return super.getValueByName(name);
-    }
-
-    @Override
-    public Condition getConditionByName(String name) {
-        return super.getConditionByName(name);
-    }
-
-    @Override
-    protected boolean valueDoesNotExists(String valueName) {
-        return super.valueDoesNotExists(valueName);
-    }
-
-    @Override
-    protected boolean conditionDoesNotExists(String conditionName) {
-        return super.conditionDoesNotExists(conditionName);
-    }
-
-    @Override
-    protected boolean endedAndStartedConditionsExist() {
-        return super.endedAndStartedConditionsExist();
     }
 
     @Override
@@ -126,19 +97,19 @@ public class KNDA extends Machine {
                                 actualConditions.add(main_condition);
                             }
 
-                            HashMap<Value, Condition> unit_transition = new HashMap<>();
+                            HashMap<Value, ArrayList<Condition>> unit_transition = new HashMap<>();
                             for (Map.Entry<Value, String> innerEntry : entry.getValue().entrySet()) {
 
                                 Value value = innerEntry.getKey();
                                 String[] conditionsLine = innerEntry.getValue().replaceAll(" ", "").split(",");
 
-                                MultipleCondition unitCondition = new MultipleCondition();
+                                ArrayList<Condition> unitCondition = new ArrayList<>();
                                 for(int i  = 0; i < conditionsLine.length; i++ ){
 
                                     if (conditionsLine[i].equals("0")) {
-                                        unit_transition.put(value, ZeroCondition.getInstance());
+                                        unitCondition.add(ZeroCondition.getInstance());
                                     } else {
-                                         unitCondition.AddCondition(getConditionByName(conditionsLine[i]));
+                                         unitCondition.add(getConditionByName(conditionsLine[i]));
 
                                     }
                                 }
@@ -176,18 +147,17 @@ public class KNDA extends Machine {
             System.out.print("\n");
             writer.write("\n");
 
-            for (Map.Entry<Condition, HashMap<Value, Condition>> entry : transitions.entrySet()) {
+            for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>> entry : transitions.entrySet()) {
                 Condition main_condition = entry.getKey();
                 HashMap<Value, Condition> unit_transition = new HashMap<>();
                 System.out.print(main_condition.getName() + "    ");
                 writer.write(main_condition.getName() + "     ");
 
                 for(Value value : values){
-                    for (Map.Entry<Value, Condition> innerEntry : entry.getValue().entrySet()) {
+                    for (Map.Entry<Value, ArrayList<Condition>> innerEntry : entry.getValue().entrySet()) {
                         //  writer.write(innerEntry.getValue().getName() + ";    ");
                         if(innerEntry.getKey().equals(value)){
-                            MultipleCondition conditions = (MultipleCondition) innerEntry.getValue(); // cast
-                            for(Condition elem : conditions){
+                            for(Condition elem : innerEntry.getValue()){
                                 writer.write(elem.getName() + ",");
                                 System.out.print(elem.getName() + ",");
                             }
@@ -207,6 +177,12 @@ public class KNDA extends Machine {
         catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void work(String wordFile) {
+        readWord(wordFile);
+        executeWord();
     }
 
     @Override
@@ -233,82 +209,66 @@ public class KNDA extends Machine {
         }
     }
 
-    private void getActualCond(int i , Condition actual ){
-        while(i!= words.size()) {
-
-            for (Map.Entry<Condition, HashMap<Value, Condition>> entry : transitions.entrySet()) {
-                Condition main_condition = entry.getKey();
-                if(main_condition.equals(actual)){
-                    for (Value value : values) {
-                        for (Map.Entry<Value, Condition> innerEntry : entry.getValue().entrySet()) {
-
-                            if (innerEntry.getKey().equals(value)) {
-                                MultipleCondition conditions = (MultipleCondition) innerEntry.getValue(); // cast
-                                for (Condition elem : conditions) {
-                                    System.out.print(elem.getName() + ",");
-                                    getActualCond(i++, elem);
-                                }
-
-                                System.out.print(" ; ");
-                            }
-
-                        }
-
-                    }
-                }
-            }
-
-
-        }
-    }
-
     @Override
     protected void executeWord() {
-        if(canExecute){
-            ArrayList<Condition> results = new ArrayList<>();
+        if(canExecute) {
+            try {
 
-
-            String line = "";
-            for(int j = 0; j < words.size(); j++){
-
-                for(int i = 0 ; i < actualConditions.size(); i++){
-                    if( actualConditions.get(i).equals(ZeroCondition.getInstance())){
-
-                        try {
-                            FileWriter writer = new FileWriter(fileOutPath, true);
-                            writer.write( "\nzero\n ");
-                            System.out.print("\nzero\n ");
-                        }
-                        catch (IOException e) {
-                            throw new RuntimeException(e);
-                        }
-
-                    }
-                    else {
-                        getActualCond(0, actualConditions.get(i));
-
-
-                    }
-
+                ArrayList<Condition> newConditions = new ArrayList<>();
+                FileWriter writer = new FileWriter(fileOutPath, true);
+                for(Condition elem: actualConditions){
+                    writer.write("actual condition = " + elem.getName() + "\n ");
                 }
 
-            }
+                for (int j = 0; j < words.size(); j++) {
+                    newConditions.clear();
+                    System.out.print("шаг" + (j+1) +" word= " + words.get(j) + ": ");
+                    for(Condition elem: actualConditions){
+                        if (elem.equals(ZeroCondition.getInstance())) {
 
+                        }
+                        else{
+                            for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>> entry : transitions.entrySet()) {
+                                Condition main_condition = entry.getKey();
+                                if (main_condition.equals(elem)) {
+                                    for (Map.Entry<Value, ArrayList<Condition>> innerEntry : entry.getValue().entrySet()) {
+
+                                        if (innerEntry.getKey().equals(getValueByName(words.get(j)))) {
+                                            for (Condition cond :  innerEntry.getValue()) {
+                                                System.out.print(cond.getName() + ",");
+                                                if(!cond.equals(ZeroCondition.getInstance()))
+                                                {
+                                                    newConditions.add(cond);
+                                                }
+                                            }
+
+                                            System.out.print(" ; ");
+                                        }
+
+                                    }
+
+                                }
+                            }
+                        }
+                    }
+                    System.out.println();
+                    actualConditions = new ArrayList<>(newConditions);
+                    }
+
+                if(actualConditions.stream().anyMatch(Condition::isEnded)){
+                    System.out.print("Слово сработало успешно");
+                }
+                else{
+                    System.out.print("Слово не привело к конечному состоянию. Оно не сработало");
+                }
+
+                } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
         else{
             System.out.println("Error word command");
         }
-    }
-
-    @Override
-    protected void changeActualCondition(String word) {
-        super.changeActualCondition(word);
-    }
-
-    @Override
-    public void work(String wordFile) {
-        readWord(wordFile);
-        executeWord();
     }
 
 }

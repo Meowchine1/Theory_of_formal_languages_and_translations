@@ -12,6 +12,11 @@ public class MultipleCondition implements Condition, Iterable<Condition>, Iterat
     public void AddCondition(Condition condition){
         conditions.add(condition);
     }
+
+    public void  ClearCondition(){
+        conditions.clear();
+    }
+
     @Override
     public String getName() {
         return "multiple";
@@ -38,6 +43,7 @@ public class MultipleCondition implements Condition, Iterable<Condition>, Iterat
         if (count < conditions.size()){
             return true;
         }
+        count = 0;
         return false;
     }
 
