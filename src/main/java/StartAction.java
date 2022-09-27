@@ -21,7 +21,18 @@ public class StartAction {
         machine.work("C:/Users/katev/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/word/slovo.txt");*/
         
         
-        FileReader reader = new FileReader("C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/machine/NDA.txt",
+      /*  FileReader reader = new FileReader("C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/machine/NDA.txt",
+                "C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/fileOut");
+
+        Machine machine = reader.defineMachine();
+
+        machine.readTxt();
+
+        machine.print();
+        machine.work("C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/word/slovo.txt");
+        */
+        
+        FileReader reader = new FileReader("C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/machine/e_transition.txt",
                 "C:/Users/Воронина/IdeaProjects/Theory_of_formal_languages_and_translations/src/main/resources/fileOut");
 
         Machine machine = reader.defineMachine();

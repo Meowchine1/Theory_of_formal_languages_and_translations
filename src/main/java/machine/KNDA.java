@@ -46,7 +46,6 @@ public class KNDA extends Machine {
                         canExecute = false;
                         break;
                     }
-
                 }
 
                 if (canExecute) {
@@ -84,8 +83,6 @@ public class KNDA extends Machine {
                         else{
                             break;
                         }
-
-
                     }
 
                     if (endedAndStartedConditionsExist() & canExecute) {
@@ -164,9 +161,7 @@ public class KNDA extends Machine {
                             writer.write(" ; ");
                             System.out.print(" ; ");
                         }
-
                     }
-
                 }
 
                 writer.write("\n");
@@ -200,7 +195,6 @@ public class KNDA extends Machine {
                     else{
                         canExecute = false;
                     }
-
                 }
             }
         }
@@ -235,18 +229,15 @@ public class KNDA extends Machine {
 
                                         if (innerEntry.getKey().equals(getValueByName(words.get(j)))) {
                                             for (Condition cond :  innerEntry.getValue()) {
-                                                System.out.print(cond.getName() + ",");
                                                 if(!cond.equals(ZeroCondition.getInstance()))
                                                 {
                                                     newConditions.add(cond);
+                                                    System.out.print(cond.getName() + ",");
                                                 }
                                             }
-
                                             System.out.print(" ; ");
                                         }
-
                                     }
-
                                 }
                             }
                         }
