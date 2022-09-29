@@ -107,7 +107,7 @@ public class KDA extends Machine {
                     for(String word: words){
 
                         changeActualCondition(word);
-                        System.out.println("[" + word + "] " + getActualConditionString());
+                        System.out.println("[" + word + "] ---> " + getActualConditionString());
                         writer.write(getActualConditionString());
                     }
                     if(actualCondition.isEnded()){

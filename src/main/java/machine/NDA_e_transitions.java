@@ -203,7 +203,7 @@ public class NDA_e_transitions extends Machine {
 
                 for (int j = 0; j < words.size(); j++) {
                     newConditions.clear();
-                    System.out.print("шаг" + (j+1) +" word= " + words.get(j) + ": ");
+                    System.out.print("шаг" + (j+1) +" word= " + words.get(j) + " ---> ");
 
                     for(Condition elem: actualConditions){
                         if (elem.equals(ZeroCondition.getInstance())) {
