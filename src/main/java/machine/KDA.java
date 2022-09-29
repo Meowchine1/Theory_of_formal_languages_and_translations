@@ -18,27 +18,27 @@ public class KDA extends Machine {
     protected static Condition actualCondition;
     private HashMap<Condition, HashMap<Value, Condition>> transitions;
 
-    public KDA(String fileInPath, String fileOutPath) {
+    public KDA(File fileInPath, File fileOutPath) {
         super(fileInPath, fileOutPath);
     }
 
     //   начального состояния больше одного
     protected void setActualCondition(Condition actualCondition) {
-        actualCondition = actualCondition;
+        KDA.actualCondition = actualCondition;
     }
 
     protected String getActualConditionString(){
-        return "\nActual condition is ==> " + actualCondition.getName();
+        return "Actual condition is ==> " + actualCondition.getName();
     }
     @Override
-    public void work(String wordFile){
+    public void work(File wordFile){
         readWord(wordFile);
         executeWord();
     }
     @Override
-    protected void readWord(String wordFile){
+    protected void readWord(File wordFile){
         try{
-            Scanner scanner = new Scanner(new File(wordFile));
+            Scanner scanner = new Scanner(wordFile);
             int n = Integer.parseInt(scanner.nextLine());
             words = new ArrayList<>(n);
             while (scanner.hasNextLine()){
@@ -107,7 +107,7 @@ public class KDA extends Machine {
                     for(String word: words){
 
                         changeActualCondition(word);
-                        System.out.print(getActualConditionString());
+                        System.out.println("[" + word + "] " + getActualConditionString());
                         writer.write(getActualConditionString());
                     }
                     if(actualCondition.isEnded()){
@@ -154,6 +154,7 @@ public class KDA extends Machine {
                 writer.write(main_condition.getName() + "   :");
                 for (Map.Entry<Value, Condition> innerEntry : entry.getValue().entrySet()) {
                     writer.write(innerEntry.getValue().getName() + ";    ");
+                    System.out.print(innerEntry.getValue().getName() + ";    ");
                 }
                 writer.write("\n");
                 System.out.print("\n");
@@ -169,7 +170,7 @@ public class KDA extends Machine {
     public void readTxt() {
 
         try {
-            Scanner scanner = new Scanner(new File(fileInPath));
+            Scanner scanner = new Scanner(fileInPath);
             String conditionNameRegex = "[*,^]";
             while (scanner.hasNextLine()) {
                 String[] numbers = scanner.nextLine().replaceAll(" ", "").split(";");

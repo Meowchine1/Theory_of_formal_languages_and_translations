@@ -19,7 +19,7 @@ public class KNDA extends Machine {
     private HashMap<Condition, HashMap<Value, ArrayList<Condition>>> transitions; //вынести в базовый класс
     ArrayList<Condition> actualConditions = new ArrayList<>();
 
-    public KNDA(String fileInPath, String fileOutPath) {
+    public KNDA(File fileInPath, File fileOutPath) {
         super(fileInPath, fileOutPath);
     }
 
@@ -27,7 +27,7 @@ public class KNDA extends Machine {
     public void readTxt() {
 
         try {
-            Scanner scanner = new Scanner(new File(fileInPath));
+            Scanner scanner = new Scanner(fileInPath);
             String conditionNameRegex = "[*,^]";
             while (scanner.hasNextLine()) {
                 String[] numbers = scanner.nextLine().replaceAll(" ", "").split(";");
@@ -175,15 +175,15 @@ public class KNDA extends Machine {
     }
 
     @Override
-    public void work(String wordFile) {
+    public void work(File wordFile) {
         readWord(wordFile);
         executeWord();
     }
 
     @Override
-    protected void readWord(String wordFile) {
+    protected void readWord(File wordFile) {
         try{
-            Scanner scanner = new Scanner(new File(wordFile));
+            Scanner scanner = new Scanner(wordFile);
             int n = Integer.parseInt(scanner.nextLine());
             words = new ArrayList<>(n);
             while (scanner.hasNextLine()){

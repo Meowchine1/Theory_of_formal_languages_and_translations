@@ -1,7 +1,9 @@
 package machine;
 
+import java.io.File;
+
 public class NotFound extends Machine{
-    public NotFound(String filePath, String fileOut) {
+    public NotFound(File filePath, File fileOut) {
         super(filePath, fileOut);
     }
 }

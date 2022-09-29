@@ -3,19 +3,18 @@ import machine.*;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
-import java.util.regex.Pattern;
 
 public class FileReader {
-    private String fileIn;
-    private String fileOut;
-    public FileReader(String fileIn, String fileOut){
+    private File fileIn;
+    private File fileOut;
+    public FileReader(File fileIn, File fileOut){
         this.fileIn = fileIn;
         this.fileOut = fileOut;
     }
     public Machine defineMachine(){
         int startedConditionsNum = 0;
         try{
-            Scanner scanner = new Scanner(new File(fileIn));
+            Scanner scanner = new Scanner(fileIn);
             String[] numbers = scanner.nextLine().replaceAll(" ", "").split(";");
 
             String values = scanner.nextLine();

@@ -5,14 +5,15 @@ package machine;
 import conditions.Condition;
 import values.Value;
 
+import java.io.File;
 import java.util.ArrayList;
 
 public abstract  class Machine {
     protected  ArrayList<Condition> conditions;
     protected  ArrayList<Value> values;
     protected ArrayList<String > words;
-    protected  String fileInPath;
-    protected  String fileOutPath;
+    protected File fileInPath;
+    protected  File fileOutPath;
 
 
     public Value getValueByName(String name){
@@ -21,7 +22,7 @@ public abstract  class Machine {
     public Condition getConditionByName(String name){
         return conditions.stream().filter(v -> v.getName().equals(name)).findFirst().get();
     }
-    public Machine(String fileInPath, String fileOutPath){
+    public Machine(File fileInPath, File fileOutPath){
         this.fileInPath = fileInPath;
         this.fileOutPath = fileOutPath;
     }
@@ -59,11 +60,11 @@ public abstract  class Machine {
     public void readTxt(){}
     public void print(){}
 
-    protected void readWord(String wordFile){}
+    protected void readWord(File wordFile){}
 
     protected void executeWord(){}
 
     protected void changeActualCondition(String word){}
-    public void work(String wordFile){}
+    public void work(File wordFile){}
 
 }
