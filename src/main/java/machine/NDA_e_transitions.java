@@ -195,11 +195,8 @@ public class NDA_e_transitions extends Machine {
         if(canExecute) {
             try {
 
-                HashSet<Condition> newConditions = new HashSet<>();
+                LinkedHashSet<Condition> newConditions = new LinkedHashSet<>();
                 FileWriter writer = new FileWriter(fileOutPath, true);
-                for(Condition elem: actualConditions){
-                    writer.write("actual condition = " + elem.getName() + "\n ");
-                }
 
                 for (int j = 0; j < words.size(); j++) {
                     newConditions.clear();
@@ -237,7 +234,7 @@ public class NDA_e_transitions extends Machine {
         }
     }
 
-    private  void transition(Condition actualCondition, HashSet<Condition> newConditions){
+    private  void transition(Condition actualCondition, LinkedHashSet<Condition> newConditions){
         for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>> entry : transitions.entrySet()) {
             Condition main_condition = entry.getKey();
             if (main_condition.equals(actualCondition)) {
