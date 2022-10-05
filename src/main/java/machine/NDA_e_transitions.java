@@ -13,8 +13,8 @@ import java.util.*;
 
 public class NDA_e_transitions extends Machine {
     private boolean canExecute = true;
-    private HashMap<Condition, HashMap<Value, ArrayList<Condition>>> transitions;
-    private ArrayList<Condition> actualConditions = new ArrayList<>();
+    private HashMap<Condition, HashMap<Value, LinkedHashSet<Condition>>> transitions;
+    private LinkedHashSet<Condition> actualConditions = new LinkedHashSet<>();
    // private HashMap<Condition, Condition> eTransitions = new HashMap<>();
     public NDA_e_transitions(File fileInPath, File fileOutPath) {
         super(fileInPath, fileOutPath);
@@ -92,13 +92,13 @@ public class NDA_e_transitions extends Machine {
                                 actualConditions.add(main_condition);
                             }
 
-                            HashMap<Value, ArrayList<Condition>> unit_transition = new HashMap<>();
+                            HashMap<Value, LinkedHashSet<Condition>> unit_transition = new HashMap<>();
                             for (Map.Entry<Value, String> innerEntry : entry.getValue().entrySet()) {
 
                                 Value value = innerEntry.getKey();
                                 String[] conditionsLine = innerEntry.getValue().replaceAll(" ", "").split(",");
 
-                                ArrayList<Condition> unitCondition = new ArrayList<>();
+                                LinkedHashSet<Condition> unitCondition = new LinkedHashSet<>();
                                 for(int i  = 0; i < conditionsLine.length; i++ ){
 
                                     if (conditionsLine[i].equals("0")) {
@@ -134,14 +134,12 @@ public class NDA_e_transitions extends Machine {
 
             System.out.print("\n");
 
-            for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>> entry : transitions.entrySet()) {
+            for (Map.Entry<Condition, HashMap<Value, LinkedHashSet<Condition>>> entry : transitions.entrySet()) {
                 Condition main_condition = entry.getKey();
-                HashMap<Value, Condition> unit_transition = new HashMap<>();
                 System.out.print(main_condition.getName() + "    ");
 
                 for(Value value : values){
-                    for (Map.Entry<Value, ArrayList<Condition>> innerEntry : entry.getValue().entrySet()) {
-                        //  writer.write(innerEntry.getValue().getName() + ";    ");
+                    for (Map.Entry<Value, LinkedHashSet<Condition>> innerEntry : entry.getValue().entrySet()) {
                         if(innerEntry.getKey().equals(value)){
                             for(Condition elem : innerEntry.getValue()){
                                 if(elem.equals(ZeroCondition.getInstance())){
@@ -150,9 +148,8 @@ public class NDA_e_transitions extends Machine {
                                 else{
                                 System.out.print(elem.getName() + ",");
                             }
-
-                            System.out.print(" ; ");
                         }
+                            System.out.print(" ; ");
                     }
                 }
             }
@@ -193,21 +190,19 @@ public class NDA_e_transitions extends Machine {
     @Override
     protected void executeWord() {
         if(canExecute) {
-            try {
-
                 LinkedHashSet<Condition> newConditions = new LinkedHashSet<>();
-                FileWriter writer = new FileWriter(fileOutPath, true);
 
                 for (int j = 0; j < words.size(); j++) {
                     newConditions.clear();
                     System.out.print("шаг" + (j+1) +" word= " + words.get(j) + " ---> ");
 
-                    for(Condition elem: actualConditions){
-                        if (elem.equals(ZeroCondition.getInstance())) {
+                    for(Condition condition: actualConditions){
+                        if (condition.equals(ZeroCondition.getInstance())) {
 
                         }
                         else{
-                            transition(elem, newConditions);
+                            CL(condition, newConditions);
+                            transition(condition, newConditions);
                         }
                     }
                     for(Condition elem : newConditions){
@@ -215,7 +210,7 @@ public class NDA_e_transitions extends Machine {
                     }
 
                     System.out.println();
-                    actualConditions = new ArrayList<>(newConditions);
+                    actualConditions = new LinkedHashSet<>(newConditions);
                 }
 
                 if(actualConditions.stream().anyMatch(Condition::isEnded)){
@@ -225,9 +220,6 @@ public class NDA_e_transitions extends Machine {
                     System.out.print("Слово не привело к конечному состоянию. Оно не сработало");
                 }
 
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
         }
         else{
             System.out.println("Error word command");
@@ -235,23 +227,13 @@ public class NDA_e_transitions extends Machine {
     }
 
     private  void transition(Condition actualCondition, LinkedHashSet<Condition> newConditions){
-        for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>>
+        for (Map.Entry<Condition, HashMap<Value, LinkedHashSet<Condition>>>
                 entry : transitions.entrySet()) {
             Condition main_condition = entry.getKey();
             if (main_condition.equals(actualCondition)) {
 
-                for (Map.Entry<Value, ArrayList<Condition>> innerEntry : entry.getValue().entrySet()) {
-                    if (innerEntry.getKey().equals(getValueByName("e"))) {
-                        for (Condition cond :  innerEntry.getValue()) {
-                            if(!cond.equals(ZeroCondition.getInstance()))
-                            {
-                                newConditions.add(cond);
-
-                            }
-                        }
-                        System.out.print(" ; ");
-                    }
-                    else{
+                for (Map.Entry<Value, LinkedHashSet<Condition>> innerEntry : entry.getValue().entrySet()) {
+                    if (!innerEntry.getKey().equals(getValueByName("e"))) {
                         for (Condition cond :  innerEntry.getValue()) {
                             if(!cond.equals(ZeroCondition.getInstance()))
                             {
@@ -260,25 +242,23 @@ public class NDA_e_transitions extends Machine {
                         }
                     }
                 }
-
             }
-
         }
     }
-    private void CL(Condition condition){
-        LinkedHashSet<Condition> close = new LinkedHashSet<>();
+    private void CL(Condition condition, LinkedHashSet<Condition> newConditions){
 
-        for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>>
+        for (Map.Entry<Condition, HashMap<Value, LinkedHashSet<Condition>>>
                 entry : transitions.entrySet()) {
             Condition main_condition = entry.getKey();
             if (main_condition.equals(condition)) {
 
-                for (Map.Entry<Value, ArrayList<Condition>> innerEntry : entry.getValue().entrySet()) {
+                for (Map.Entry<Value, LinkedHashSet<Condition>> innerEntry : entry.getValue().entrySet()) {
                     if (innerEntry.getKey().equals(getValueByName("e"))) {
                         for (Condition cond :  innerEntry.getValue()) {
                             if(!cond.equals(ZeroCondition.getInstance()))
                             {
-                                close.add(cond);
+                                newConditions.add(cond);
+                                CL(cond, newConditions);
 
                             }
                         }

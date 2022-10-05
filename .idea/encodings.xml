@@ -3,5 +3,6 @@
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/src/main/java/StartKNDAwithE.java" charset="windows-1251" />
     <file url="file://$PROJECT_DIR$/src/main/java/machine/KDA.java" charset="windows-1251" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/machine/e_transition.txt" charset="windows-1251" />
   </component>
 </project>
