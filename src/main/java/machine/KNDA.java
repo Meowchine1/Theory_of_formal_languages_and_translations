@@ -208,7 +208,7 @@ public class KNDA extends Machine {
         if(canExecute) {
             try {
 
-                ArrayList<Condition> newConditions = new ArrayList<>();
+                ArrayList<Condition> newConditions = new ArrayList<>();// set
                 FileWriter writer = new FileWriter(fileOutPath, true);
                 for(Condition elem: actualConditions){
                     writer.write("actual condition = " + elem.getName() + "\n ");

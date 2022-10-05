@@ -235,7 +235,8 @@ public class NDA_e_transitions extends Machine {
     }
 
     private  void transition(Condition actualCondition, LinkedHashSet<Condition> newConditions){
-        for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>> entry : transitions.entrySet()) {
+        for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>>
+                entry : transitions.entrySet()) {
             Condition main_condition = entry.getKey();
             if (main_condition.equals(actualCondition)) {
 
@@ -264,4 +265,32 @@ public class NDA_e_transitions extends Machine {
 
         }
     }
+    private void CL(Condition condition){
+        LinkedHashSet<Condition> close = new LinkedHashSet<>();
+
+        for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>>
+                entry : transitions.entrySet()) {
+            Condition main_condition = entry.getKey();
+            if (main_condition.equals(condition)) {
+
+                for (Map.Entry<Value, ArrayList<Condition>> innerEntry : entry.getValue().entrySet()) {
+                    if (innerEntry.getKey().equals(getValueByName("e"))) {
+                        for (Condition cond :  innerEntry.getValue()) {
+                            if(!cond.equals(ZeroCondition.getInstance()))
+                            {
+                                close.add(cond);
+
+                            }
+                        }
+                    }
+                }
+
+            }
+
+        }
+
+    }
+    // для стартового значения сразу ищем замыкание по e
+    // а только потом берем переходы по значению
+    // для каждого перехода находим замыкание по е
 }
