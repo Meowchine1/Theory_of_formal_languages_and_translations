@@ -1,11 +1,8 @@
 package machine;
-
 import conditions.Condition;
-import conditions.MultipleCondition;
 import conditions.UsualCondition;
 import conditions.ZeroCondition;
 import values.Value;
-
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -16,11 +13,61 @@ import java.util.*;
 public class KNDA extends Machine {
 
     private boolean canExecute = true;
-    private HashMap<Condition, HashMap<Value, ArrayList<Condition>>> transitions; //вынести в базовый класс
-    ArrayList<Condition> actualConditions = new ArrayList<>();
+    private HashMap<Condition, HashMap<Value, LinkedHashSet<Condition>>> transitions; //вынести в базовый класс
+    LinkedHashSet<Condition> actualConditions = new LinkedHashSet<>();
 
     public KNDA(File fileInPath, File fileOutPath) {
         super(fileInPath, fileOutPath);
+    }
+
+    public KNDA() {
+        super();
+    }
+
+    public void FromEtoKNDA(NDA_e_transitions eNda) {
+        // делать заключительным если по эпсилон переходит. сначала замыкание потом переход
+
+        if (canExecute) {
+            LinkedHashSet<Condition> newConditions = new LinkedHashSet<>();
+
+            for (Condition condition : actualConditions) {
+                eNda.CL(condition, newConditions);
+            }
+            actualConditions.addAll(newConditions);
+            for (int j = 0; j < values.size(); j++) {
+
+                System.out.print("шаг" + (j + 1) + " word= " + words.get(j) + " ---> ");
+
+                for (Condition condition : actualConditions) {
+                    if (condition.equals(ZeroCondition.getInstance())) {
+                    } else {
+                        eNda.transition(condition, newConditions);
+                    }
+                }
+                actualConditions.addAll(newConditions);
+
+                for (Condition condition : actualConditions) {
+                    if (condition.equals(ZeroCondition.getInstance())) {
+                    } else {
+                        eNda.CL(condition, newConditions);
+                    }
+                }
+                actualConditions.addAll(newConditions);
+                for (Condition elem : newConditions) {
+                    System.out.print(elem.getName() + ",");
+                }
+
+                System.out.println();
+                actualConditions = new LinkedHashSet<>(newConditions);
+                newConditions.clear();
+            }
+
+            if (actualConditions.stream().anyMatch(Condition::isEnded)) {
+                System.out.print("Слово сработало успешно");
+            }
+
+
+        }
     }
 
     @Override
@@ -94,13 +141,13 @@ public class KNDA extends Machine {
                                 actualConditions.add(main_condition);
                             }
 
-                            HashMap<Value, ArrayList<Condition>> unit_transition = new HashMap<>();
+                            HashMap<Value, LinkedHashSet<Condition>> unit_transition = new HashMap<>();
                             for (Map.Entry<Value, String> innerEntry : entry.getValue().entrySet()) {
 
                                 Value value = innerEntry.getKey();
                                 String[] conditionsLine = innerEntry.getValue().replaceAll(" ", "").split(",");
 
-                                ArrayList<Condition> unitCondition = new ArrayList<>();
+                                LinkedHashSet<Condition> unitCondition = new LinkedHashSet<>();
                                 for(int i  = 0; i < conditionsLine.length; i++ ){
 
                                     if (conditionsLine[i].equals("0")) {
@@ -144,14 +191,14 @@ public class KNDA extends Machine {
             System.out.print("\n");
             writer.write("\n");
 
-            for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>> entry : transitions.entrySet()) {
+            for (Map.Entry<Condition, HashMap<Value, LinkedHashSet<Condition>>> entry : transitions.entrySet()) {
                 Condition main_condition = entry.getKey();
                 HashMap<Value, Condition> unit_transition = new HashMap<>();
                 System.out.print(main_condition.getName() + "    ");
                 writer.write(main_condition.getName() + "     ");
 
                 for(Value value : values){
-                    for (Map.Entry<Value, ArrayList<Condition>> innerEntry : entry.getValue().entrySet()) {
+                    for (Map.Entry<Value, LinkedHashSet<Condition>> innerEntry : entry.getValue().entrySet()) {
                         //  writer.write(innerEntry.getValue().getName() + ";    ");
                         if(innerEntry.getKey().equals(value)){
                             for(Condition elem : innerEntry.getValue()){
@@ -222,10 +269,10 @@ public class KNDA extends Machine {
 
                         }
                         else{
-                            for (Map.Entry<Condition, HashMap<Value, ArrayList<Condition>>> entry : transitions.entrySet()) {
+                            for (Map.Entry<Condition, HashMap<Value, LinkedHashSet<Condition>>> entry : transitions.entrySet()) {
                                 Condition main_condition = entry.getKey();
                                 if (main_condition.equals(elem)) {
-                                    for (Map.Entry<Value, ArrayList<Condition>> innerEntry : entry.getValue().entrySet()) {
+                                    for (Map.Entry<Value, LinkedHashSet<Condition>> innerEntry : entry.getValue().entrySet()) {
 
                                         if (innerEntry.getKey().equals(getValueByName(words.get(j)))) {
                                             for (Condition cond :  innerEntry.getValue()) {

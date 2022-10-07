@@ -15,6 +15,10 @@ public abstract  class Machine {
     protected File fileInPath;
     protected  File fileOutPath;
 
+    public Machine() {
+
+    }
+
 
     public Value getValueByName(String name){
         return values.stream().filter(v -> v.getValue().equals(name)).findFirst().get();
