@@ -1,5 +1,6 @@
 package machine;
 import conditions.Condition;
+import conditions.MultipleCondition;
 import conditions.UsualCondition;
 import conditions.ZeroCondition;
 import values.Value;
@@ -8,12 +9,13 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 // несколько начальных состояний распараллеливание сразу
 public class KNDA extends Machine {
 
-    private boolean canExecute = true;
-    private HashMap<Condition, HashMap<Value, LinkedHashSet<Condition>>> transitions; //вынести в базовый класс
+    protected boolean canExecute = true;
+    protected HashMap<Condition, HashMap<Value, LinkedHashSet<Condition>>> transitions; //вынести в базовый класс
     LinkedHashSet<Condition> actualConditions = new LinkedHashSet<>();
 
     public KNDA(File fileInPath, File fileOutPath) {
@@ -24,46 +26,64 @@ public class KNDA extends Machine {
         super();
     }
 
-    public void FromEtoKNDA(NDA_e_transitions eNda) {
-        // делать заключительным если по эпсилон переходит. сначала замыкание потом переход
+    public KDA translateToKDA(){
+        KDA kda = new KDA();
+        kda.translateKNDAtoKDA(this);
+        return kda;
 
-        if (canExecute) {
-            LinkedHashSet<Condition> newConditions = new LinkedHashSet<>();
+    }
 
-            for (Condition condition : actualConditions) {
-                eNda.CL(condition, newConditions);
-            }
-            actualConditions.addAll(newConditions);
-            for (int j = 0; j < values.size(); j++) {
+    public void transitionForKDA(Condition actualCondition, String word, MultipleCondition newConditions){
+        for (Map.Entry<Condition, HashMap<Value, LinkedHashSet<Condition>>>
+                entry : transitions.entrySet()) {
+            Condition main_condition = entry.getKey();
+            if (main_condition.equals(actualCondition)) {
 
-                System.out.print("шаг" + (j + 1) + " word= " + words.get(j) + " ---> ");
-
-                for (Condition condition : actualConditions) {
-                    if (condition.equals(ZeroCondition.getInstance())) {
-                    } else {
-                        eNda.transition(condition, newConditions);
+                for (Map.Entry<Value, LinkedHashSet<Condition>> innerEntry : entry.getValue().entrySet()) {
+                    if (innerEntry.getKey().equals(getValueByName(word))){
+                        /*LinkedHashSet<Condition> tmpConditions = innerEntry.getValue();
+                            newConditions.addAll(tmpConditions
+                                    .stream()
+                                    .filter(x -> x.equals(ZeroCondition.getInstance()))
+                                    .collect(Collectors.toSet()));*/
+                        newConditions.addAll(innerEntry.getValue()
+                                .stream()
+                                .filter(x -> !x.equals(ZeroCondition.getInstance()))
+                                .collect(Collectors.toSet()));
                     }
                 }
-                actualConditions.addAll(newConditions);
+                break;
+            }
+        }
 
-                for (Condition condition : actualConditions) {
-                    if (condition.equals(ZeroCondition.getInstance())) {
-                    } else {
-                        eNda.CL(condition, newConditions);
+    }
+
+    public void translateFromEKNDAToKNDA(NDA_e_transitions eNda) {
+
+        transitions = new HashMap<>();
+        if (eNda.canExecute) {
+            for(Condition condition : conditions){
+                HashMap<Value, LinkedHashSet<Condition>> transition = new HashMap<>();
+
+                for(Value value : values){
+                    if(!value.getValue().equals("e")){
+                        LinkedHashSet<Condition> close = new LinkedHashSet<>();
+                        LinkedHashSet<Condition> unitTransition = new LinkedHashSet<>();
+                        eNda.CL(condition, close);
+                        // если замыкание содержит заключительное состояние
+                        if(close.stream().anyMatch(Condition::isEnded)){
+                            condition.SetEnded(true);
+                        }
+                        eNda.transition(condition, value.getValue(), unitTransition);
+
+                        for(Condition closeCondition: close ){
+                            eNda.transition(closeCondition, value.getValue(), unitTransition);
+                        }
+
+                        transition.put(value, unitTransition);
                     }
                 }
-                actualConditions.addAll(newConditions);
-                for (Condition elem : newConditions) {
-                    System.out.print(elem.getName() + ",");
-                }
-
-                System.out.println();
-                actualConditions = new LinkedHashSet<>(newConditions);
-                newConditions.clear();
-            }
-
-            if (actualConditions.stream().anyMatch(Condition::isEnded)) {
-                System.out.print("Слово сработало успешно");
+                transitions.put(condition, transition);
             }
 
 
@@ -152,9 +172,9 @@ public class KNDA extends Machine {
 
                                     if (conditionsLine[i].equals("0")) {
                                         unitCondition.add(ZeroCondition.getInstance());
-                                    } else {
+                                    }
+                                    else {
                                          unitCondition.add(getConditionByName(conditionsLine[i]));
-
                                     }
                                 }
                                 unit_transition.put(value, unitCondition);
@@ -176,49 +196,52 @@ public class KNDA extends Machine {
 
     @Override
     public void print() {
-        try(FileWriter writer = new FileWriter(fileOutPath, false)) {
-            writer.write("      ");
-            System.out.print("      ");
-            values.forEach(c -> {
-                try {
-                    writer.write(c.getValue() + "     ");
-                    System.out.print(c.getValue() + "     ");
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            });
 
-            System.out.print("\n");
-            writer.write("\n");
+        System.out.print("      ");
+        values.forEach(c -> {
+            if(!c.getValue().equals("e")){
+                System.out.print(c.getValue() + "     ");
+            }
+        });
+        System.out.print("\n");
 
-            for (Map.Entry<Condition, HashMap<Value, LinkedHashSet<Condition>>> entry : transitions.entrySet()) {
-                Condition main_condition = entry.getKey();
-                HashMap<Value, Condition> unit_transition = new HashMap<>();
-                System.out.print(main_condition.getName() + "    ");
-                writer.write(main_condition.getName() + "     ");
+        for(Condition condition : conditions){
+            if(condition.isStarted()){
+                System.out.print(condition.getName()+ "^    ");
+            } else if (condition.isEnded()) {
+                System.out.print(condition.getName()+ "*    ");
+            }
+            else{
+                System.out.print(condition.getName()+ "    ");
+            }
 
-                for(Value value : values){
-                    for (Map.Entry<Value, LinkedHashSet<Condition>> innerEntry : entry.getValue().entrySet()) {
-                        //  writer.write(innerEntry.getValue().getName() + ";    ");
-                        if(innerEntry.getKey().equals(value)){
-                            for(Condition elem : innerEntry.getValue()){
-                                writer.write(elem.getName() + ",");
-                                System.out.print(elem.getName() + ",");
+            for(Value value: values)
+            {
+                for (Map.Entry<Condition, HashMap<Value, LinkedHashSet<Condition>>> entry : transitions.entrySet()){
+                    if(entry.getKey().equals(condition)){
+
+                        for (Map.Entry<Value, LinkedHashSet<Condition>> innerEntry : entry.getValue().entrySet()){
+                            if(innerEntry.getKey().equals(value)){
+
+                                for(Condition elem : innerEntry.getValue()){
+                                    if(elem.equals(ZeroCondition.getInstance())){
+                                        if( innerEntry.getValue().size() == 1){
+                                            System.out.print("  0  ");
+                                        }
+                                    }
+                                    else{
+                                        System.out.print(elem.getName() + ",");
+                                    }
+                                }
+                                System.out.print(" ; ");
                             }
-                            writer.write(" ; ");
-                            System.out.print(" ; ");
                         }
                     }
                 }
-
-                writer.write("\n");
-                System.out.println();
             }
+            System.out.println();
+        }
 
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -290,7 +313,7 @@ public class KNDA extends Machine {
                         }
                     }
                     System.out.println();
-                    actualConditions = new ArrayList<>(newConditions);
+                    actualConditions = new LinkedHashSet<>(newConditions);
                     }
 
                 if(actualConditions.stream().anyMatch(Condition::isEnded)){

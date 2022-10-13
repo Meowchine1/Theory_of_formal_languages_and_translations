@@ -1,6 +1,7 @@
 package machine;
 
 import conditions.Condition;
+import conditions.MultipleCondition;
 import conditions.UsualCondition;
 import conditions.ZeroCondition;
 import values.Value;
@@ -9,10 +10,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class KDA extends Machine {
     protected static Condition actualCondition;
@@ -22,7 +21,116 @@ public class KDA extends Machine {
         super(fileInPath, fileOutPath);
     }
 
-    //   начального состояния больше одного
+    public KDA() {
+    }
+
+
+    public KDA translateKNDAtoKDA(KNDA knda) {
+
+        if (knda.canExecute){
+            transitions = new HashMap<>();
+
+            LinkedHashSet<Condition> multipleConditions = new LinkedHashSet<>();
+            MultipleCondition started = new MultipleCondition();
+            started.addCondition(conditions.stream().filter(Condition::isStarted).findFirst().orElse(null));
+            multipleConditions.add(started);
+            values = values
+                    .stream()
+                    .filter(x -> !x.getValue().equals("e"))
+                    .collect(Collectors.toCollection(ArrayList::new));
+
+            conditions = new ArrayList<>();
+            conditions.add(started);
+               // while change exists
+            while(multipleConditions.size() > 0){
+
+                LinkedHashSet<Condition> newMultipleConditionsCollection = new LinkedHashSet<>();
+
+                    for(Condition multipleCondition: multipleConditions){
+                        HashMap<Value, Condition> unitTransition = new HashMap<>();
+
+                        for(Value value: values) {
+
+                            MultipleCondition newMultiplecondition = new MultipleCondition();
+
+                            for (Condition condition : multipleCondition.getConditions()) {
+                                knda.transitionForKDA(condition, value.getValue(), newMultiplecondition);
+                            }
+                               if( conditions.stream().anyMatch(x -> x.getConditions().equals(newMultiplecondition.getConditions()))){
+
+                                  Condition existingCondition = conditions // get already existing condition
+                                           .stream()
+                                           .filter(x ->
+                                                   x.getConditions()
+                                                           .equals(newMultiplecondition.getConditions()))
+                                          .findAny()
+                                          .orElse(null);
+                                   unitTransition.put(value, existingCondition);
+                               }
+                               else{
+                                   newMultipleConditionsCollection.add(newMultiplecondition);// add new condition
+                                   unitTransition.put(value, newMultiplecondition);
+                                   conditions.add(newMultiplecondition);
+                               }
+
+                        }
+                        transitions.put(multipleCondition, unitTransition);
+                    }
+
+                multipleConditions = newMultipleConditionsCollection;
+
+            }
+        }
+        return this;
+    }
+
+    public void printTranslationResult(){
+        System.out.print("             ");
+        values.forEach(c -> {
+            if(!c.getValue().equals("e")){
+                System.out.print(c.getValue() + "     ");
+            }
+        });
+        System.out.print("\n");
+
+        for(Condition condition : conditions){
+            System.out.print("[");
+            for(Condition innerCondition : condition.getConditions()){
+                if(innerCondition.isStarted()){
+                    System.out.print(innerCondition.getName() + "^, " );
+                }
+                else if (innerCondition.isEnded()){
+                    System.out.print(innerCondition.getName() + "*, ");
+                }
+                else {
+                    System.out.print(innerCondition.getName() + ", ");
+
+                }
+            }
+            System.out.print("]  ");
+
+            for(Value value: values)
+            {
+                for (Map.Entry<Condition, HashMap<Value, Condition>> entry : transitions.entrySet()){
+                    if(entry.getKey().equals(condition)){
+
+                        for (Map.Entry<Value, Condition> innerEntry : entry.getValue().entrySet()){
+                            if(innerEntry.getKey().equals(value)){
+
+                                for(Condition elem : innerEntry.getValue().getConditions()){
+
+                                        System.out.print(elem.getName() + ",");
+
+                                }
+                                System.out.print(" | ");
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println();
+        }
+    }
     protected void setActualCondition(Condition actualCondition) {
         KDA.actualCondition = actualCondition;
     }
@@ -131,40 +239,24 @@ public class KDA extends Machine {
 
     @Override
     public void print(){
-
-        try(FileWriter writer = new FileWriter(fileOutPath, false)) {
-            writer.write("      ");
             System.out.print("      ");
             values.forEach(c -> {
-                try {
-                    writer.write(c.getValue() + "     ");
-                    System.out.print(c.getValue() + "     ");
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                System.out.print(c.getValue() + "     ");
             });
 
             System.out.print("\n");
-            writer.write("\n");
 
             for (Map.Entry<Condition, HashMap<Value, Condition>> entry : transitions.entrySet()) {
                 Condition main_condition = entry.getKey();
                 HashMap<Value, Condition> unit_transition = new HashMap<>();
                 System.out.print(main_condition.getName() + "   :");
-                writer.write(main_condition.getName() + "   :");
+
                 for (Map.Entry<Value, Condition> innerEntry : entry.getValue().entrySet()) {
-                    writer.write(innerEntry.getValue().getName() + ";    ");
                     System.out.print(innerEntry.getValue().getName() + ";    ");
                 }
-                writer.write("\n");
                 System.out.print("\n");
             }
-
         }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Override
     public void readTxt() {
@@ -261,4 +353,5 @@ public class KDA extends Machine {
         }
 
     }
+
 }

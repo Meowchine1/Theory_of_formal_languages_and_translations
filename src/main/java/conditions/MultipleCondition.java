@@ -1,20 +1,23 @@
 package conditions;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.*;
 
-public class MultipleCondition implements Condition, Iterable<Condition>, Iterator<Condition> {
+public class MultipleCondition implements Condition {
+    private LinkedHashSet<Condition> conditions = new LinkedHashSet<>();
 
-    private int count = 0;
-    private  ArrayList<Condition> conditions = new ArrayList<>();
-
-    public void AddCondition(Condition condition){
+    public void addCondition(Condition condition){
         conditions.add(condition);
     }
 
-    public void  ClearCondition(){
-        conditions.clear();
+    public void addAll(Set<Condition> conditions){
+        this.conditions.addAll(conditions);
+
+    }
+    public MultipleCondition() {
+    }
+
+    public LinkedHashSet<Condition> getConditions(){
+        return conditions;
     }
 
     @Override
@@ -32,27 +35,13 @@ public class MultipleCondition implements Condition, Iterable<Condition>, Iterat
         return false;
     }
 
-
     @Override
-    public Iterator<Condition> iterator() {
-        return this;
+    public void SetEnded(Boolean ended) {
+
     }
 
-    @Override
-    public boolean hasNext() {
-        if (count < conditions.size()){
-            return true;
-        }
-        count = 0;
-        return false;
-    }
 
-    @Override
-    public Condition next() {
-        if (count == conditions.size())
-            throw new NoSuchElementException();
 
-        count++;
-        return conditions.get(count - 1);
-    }
+
+
 }

@@ -1,5 +1,7 @@
 package conditions;
 
+import java.util.LinkedHashSet;
+
 public class UsualCondition implements Condition {
     private String name;
     private boolean isEnded;
@@ -15,6 +17,18 @@ public class UsualCondition implements Condition {
 
     public boolean isStarted() {
         return isStarted;
+    }
+
+    @Override
+    public void SetEnded(Boolean ended) {
+        this.isEnded = ended;
+    }
+
+    @Override
+    public LinkedHashSet<Condition> getConditions() {
+        LinkedHashSet<Condition> conditions = new LinkedHashSet<>();
+        conditions.add(this);
+        return  conditions;
     }
 
     public UsualCondition(String name, boolean isEnded, boolean isStarted ) {

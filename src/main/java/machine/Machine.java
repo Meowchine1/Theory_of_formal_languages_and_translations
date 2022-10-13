@@ -3,17 +3,19 @@ package machine;
 //     ....  values  ....
 // cond[i]
 import conditions.Condition;
+import conditions.MultipleCondition;
 import values.Value;
 
 import java.io.File;
 import java.util.ArrayList;
 
 public abstract  class Machine {
-    protected  ArrayList<Condition> conditions;
-    protected  ArrayList<Value> values;
-    protected ArrayList<String > words;
-    protected File fileInPath;
-    protected  File fileOutPath;
+    protected static ArrayList<MultipleCondition> multipleConditions;
+    protected static ArrayList<Condition> conditions;
+    protected static ArrayList<Value> values;
+    protected static ArrayList<String > words;
+    protected static File fileInPath;
+    protected static File fileOutPath;
 
     public Machine() {
 
@@ -26,6 +28,12 @@ public abstract  class Machine {
     public Condition getConditionByName(String name){
         return conditions.stream().filter(v -> v.getName().equals(name)).findFirst().get();
     }
+
+   // public MultipleCondition getMultipleConditionByConditions( MultipleCondition condition){
+
+
+      // }
+
     public Machine(File fileInPath, File fileOutPath){
         this.fileInPath = fileInPath;
         this.fileOutPath = fileOutPath;
